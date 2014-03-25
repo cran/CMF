@@ -1,0 +1,3 @@
+useDynLib(CMF)
+exportPattern("^[[?!p_].*\\.Rd$]|matrix_to_triplets|triplets_to_matrix|getCMFopts|CMF")
+import(Rcpp)
