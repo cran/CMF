@@ -1,5 +1,6 @@
 #include <Rcpp.h>
-#include<iostream>
+#include <iostream>
+
 using namespace Rcpp;
 
 // [[Rcpp::export]]
@@ -97,7 +98,7 @@ List p_updateMean(NumericMatrix Xm, NumericMatrix U1m, NumericMatrix U2m, Numeri
     r = Xm(row,0) - 1; c = Xm(row,1) - 1;
     temp = 0;
     for(k=0;k<K;k++) {
-	
+
       temp = temp + U1m(r,k)*U2m(c,k);
     }
     if(I(0)==1) {
