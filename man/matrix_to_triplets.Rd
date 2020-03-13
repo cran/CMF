@@ -40,7 +40,7 @@ print(triplet)
 
 }
 \seealso{
-\code{triplets_to_matrix}
+\code{\link{triplets_to_matrix}}
 }
 \author{
 Arto Klami and Lauri Väre

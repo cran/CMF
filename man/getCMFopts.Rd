@@ -75,7 +75,7 @@ CMF_options$useBias = FALSE # Do not take row and column means into
 \references{
 Arto Klami, Guillaume Bouchard, and Abhishek Tripathi.
 Group-sparse embeddings in collective matrix factorization.
-arXiv:1312.5921, 2013.
+arXiv:1312.5921, 2014.
 
 Seppo Virtanen, Arto Klami, Suleiman A. Khan, and Samuel Kaski.
 Bayesian group factor analysis. In Proceedings of the 15th

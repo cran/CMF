@@ -22,16 +22,15 @@ A list of
              matrix separately.}
 }
 \description{
-Code for predicting missing elements with an existing
-CMF model. The predictions are made for all of the elements specified
-in the list of input matrices \code{X}. The function also returns the
-root mean square error (RMSE) between the predicted outputs and the values
-provided in \code{X}.
+Code for predicting missing elements with an existing CMF model.
+The predictions are made for all of the elements specified in the list of
+input matrices \code{X}. The function also returns the root mean square
+error (RMSE) between the predicted outputs and the values provided in
+\code{X}.
 }
 \details{
-Note that \code{X} needs to be provided as a set
-of triplets instead of as a regular matrix. See
-\code{matrix_to_triplets}.
+Note that \code{X} needs to be provided as a set of triplets instead of as
+a regular matrix. See \code{\link{matrix_to_triplets}}.
 }
 \examples{
 

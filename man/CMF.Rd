@@ -73,10 +73,10 @@ matrices are updated jointly by Newton-Raphson method, whereas
 the rest use closed-form updates.
 
 Note that the input data needs to be given in a specific
-sparse format. See \code{matrix_to_triplets} for details.
+sparse format. See \code{\link{matrix_to_triplets}} for details.
 
 The behavior of the algorithm can be modified via the
-\code{opts} parameter. See \code{getCMFopts} for details.
+\code{opts} parameter. See \code{\link{getCMFopts}} for details.
 Of particular interest are the elements \code{useBias} and
 \code{method}.
 
@@ -91,7 +91,7 @@ roughly the notation used in the paper.
 \references{
 Arto Klami, Guillaume Bouchard, and Abhishek Tripathi.
 Group-sparse embeddings in collective matrix factorization.
-arXiv:1312.5921, 2013.
+arXiv:1312.5921, 2014.
 }
 \author{
 Arto Klami and Lauri Väre

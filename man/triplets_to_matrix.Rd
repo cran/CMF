@@ -13,14 +13,14 @@ triplets_to_matrix(triplets)
 The input matrix as a normal matrix of class \code{matrix}
 }
 \description{
-This function is the inverse of \code{matrix_to_triplets}.
+This function is the inverse of \code{\link{matrix_to_triplets}}.
 It converts a matrix represented as a set of triplets into
 an object of the class \code{matrix}. The missing entries
 (the ones not present in the triplet representation) are
 filled in as NA.
 }
 \details{
-See \code{matrix_to_triplets} for a description of the
+See \code{\link{matrix_to_triplets}} for a description of the
 representation.
 }
 \examples{
@@ -31,6 +31,9 @@ print(triplet)
 xnew <- triplets_to_matrix(triplet)
 print(xnew)
 
+}
+\seealso{
+\code{\link{matrix_to_triplets}}
 }
 \author{
 Arto Klami and Lauri Väre
