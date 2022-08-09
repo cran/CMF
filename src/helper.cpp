@@ -1,147 +1,173 @@
-#include <Rcpp.h>
-#include <iostream>
+#include <cpp11/doubles.hpp>
+#include <cpp11/integers.hpp>
+#include <cpp11/list.hpp>
+#include <cpp11/matrix.hpp>
+using namespace cpp11;
 
-using namespace Rcpp;
+[[cpp11::register]] void p_gradUsparse(const doubles_matrix<> Xm, doubles_matrix<> Gm,
+                                       const doubles_matrix<> CUm,
+                                       const doubles_matrix<> OUm,
+                                       const doubles_matrix<> Cm, const int idx,
+                                       const double tau, const doubles Rowm,
+                                       const doubles Colm) {
+  double* const pGm = REAL(Gm.data());
 
-// [[Rcpp::export]]
-void p_gradUsparse(NumericMatrix Xm, NumericMatrix Gm, NumericMatrix CUm, NumericMatrix OUm, NumericMatrix Cm, NumericVector I, NumericVector T, NumericVector Rowm, NumericVector Colm){
- int N = Xm.nrow(), K = Gm.ncol();
- int row, r, c, k;
- double temp;
- if(I(0)==1) {
-   for(row=0;row<N;row++) {
-     r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-     temp = 0;
-     for(k=0;k<K;k++) {
-       temp = temp + CUm(r,k)*OUm(c,k);
-     }
-     temp = temp - Xm(row,2) + Rowm(r) + Colm(c);
-     for(k=0;k<K;k++) {
-       Gm(r,k) = Gm(r,k) + T(0) * (temp * OUm(c,k) + CUm(r,k)*Cm(c,k));
-     }
-   }
- } else {
-   for(row=0;row<N;row++) {
-     r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-     temp = 0;
-     for(k=0;k<K;k++) {
-       temp = temp + CUm(c,k)*OUm(r,k);
-     }
-     temp = temp - Xm(row,2) + Rowm(r) + Colm(c);
-     for(k=0;k<K;k++) {
-       Gm(c,k) = Gm(c,k) + T(0) * (temp * OUm(r,k) + CUm(c,k)*Cm(r,k));
-     }
-   }
- }
- //return(Gm);
-}
+  const int N = Xm.nrow();
+  const int K = Gm.ncol();
 
+  // If idx == 1 => update a row entity
+  // If idx == 2 => update a column entity
+  if (idx == 1) {
+    for (int n = 0; n < N; n++) {
+      const int r = Xm(n, 0) - 1;
+      const int c = Xm(n, 1) - 1;
 
-// [[Rcpp::export]]
-void p_updatePseudoData(NumericMatrix Xm, NumericMatrix U1m, NumericMatrix U2m, NumericVector Rv, NumericVector Cv){
-  int N = Xm.nrow(), K = U1m.ncol();
-  int row, r, c, k;
-  double temp;
-  for(row=0;row<N;row++) {
-    r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-    temp = 0;
-    for(k=0;k<K;k++) {
-      temp = temp + U1m(r,k)*U2m(c,k);
+      double tmp = 0.0;
+      for (int k = 0; k < K; k++) {
+        tmp += CUm(r, k) * OUm(c, k);
+      }
+      tmp += -Xm(n, 2) + Rowm[r] + Colm[c];
+
+      for (int k = 0; k < K; k++) {
+        pGm[r + k * K] += tau * (tmp * OUm(c, k) + CUm(r, k) * Cm(c, k));
+      }
     }
-    temp = temp + Rv(r) + Cv(c);
-    Xm(row,2) = temp;
-  }
-  //return(Xm);
-}
-
-// [[Rcpp::export]]
-NumericVector p_updateTau(NumericMatrix Xm, NumericMatrix U1m, NumericMatrix U2m, NumericMatrix cov1m, NumericMatrix cov2m, NumericVector Rv, NumericVector Cv, NumericVector nu1v, NumericVector nu2v){
-  int N = Xm.nrow(), K = U1m.ncol();
-  int row, r, c, k;
-  double temp;
-  NumericVector out(1);
-
-  for(row=0;row<N;row++) {
-    r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-    temp = 0;
-    for(k=0;k<K;k++) {
-      temp = temp + U1m(r,k)*U2m(c,k);
-    }
-    temp = temp + Rv(r) + Cv(c);
-    temp = Xm(row,2) - temp;
-    temp = temp*temp;
-    for(k=0;k<K;k++) {
-      temp = temp + cov1m(r,k)*U2m(c,k)*U2m(c,k) + U1m(r,k)*U1m(r,k)*cov2m(c,k) + cov1m(r,k)*cov2m(c,k);
-    }
-    temp = temp + nu1v(r) + nu2v(c);
-    out(0) = out(0) + temp;
-  }
-  return(out);
-}
-
-// [[Rcpp::export]]
-List p_updateMean(NumericMatrix Xm, NumericMatrix U1m, NumericMatrix U2m, NumericVector I, NumericVector Mv){
-  int N = Xm.nrow(), K = U1m.ncol();
-  int row, r, c, k;
-  double temp;
-  NumericVector Nv, Cv;
-
-  if(I(0)==1) {
-    Nv = NumericVector(U1m.nrow());
-    Cv = NumericVector(U1m.nrow());
   } else {
-    Nv = NumericVector(U2m.nrow());
-    Cv = NumericVector(U2m.nrow());
+    for (int n = 0; n < N; n++) {
+      const int r = Xm(n, 0) - 1;
+      const int c = Xm(n, 1) - 1;
+
+      double tmp = 0.0;
+      for (int k = 0; k < K; k++) {
+        tmp += CUm(c, k) * OUm(r, k);
+      }
+      tmp += -Xm(n, 2) + Rowm[r] + Colm[c];
+
+      for (int k = 0; k < K; k++) {
+        pGm[c + k * K] += tau * (tmp * OUm(r, k) + CUm(c, k) * Cm(r, k));
+      }
+    }
+  }
+}
+
+[[cpp11::register]] doubles p_updatePseudoData(const integers_matrix<> indices,
+                                               const doubles_matrix<> U1m,
+                                               const doubles_matrix<> U2m,
+                                               const doubles Rv, const doubles Cv) {
+  const int N = indices.nrow();
+  const int K = U1m.ncol();
+
+  writable::doubles out(N);
+
+  for (int n = 0; n < N; n++) {
+    const int r = indices(n, 0) - 1;
+    const int c = indices(n, 1) - 1;
+
+    double tmp = 0.0;
+    for (int k = 0; k < K; k++) {
+      tmp += U1m(r, k) * U2m(c, k);
+    }
+    out[n] = tmp + Rv[r] + Cv[c];
   }
 
-  for(row=0;row<N;row++) {
-    r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-    temp = 0;
-    for(k=0;k<K;k++) {
+  return out;
+}
 
-      temp = temp + U1m(r,k)*U2m(c,k);
+[[cpp11::register]] double p_updateTau(
+    const doubles_matrix<> Xm, const doubles_matrix<> U1m, const doubles_matrix<> U2m,
+    const doubles_matrix<> cov1m, const doubles_matrix<> cov2m, const doubles Rv,
+    const doubles Cv, const doubles nu1v, const doubles nu2v) {
+  const int N = Xm.nrow();
+  const int K = U1m.ncol();
+  double out = 0.0;
+
+  for (int n = 0; n < N; n++) {
+    const int r = static_cast<int>(Xm(n, 0)) - 1;
+    const int c = static_cast<int>(Xm(n, 1)) - 1;
+
+    double tmp = 0.0;
+    for (int k = 0; k < K; k++) {
+      tmp += U1m(r, k) * U2m(c, k);
     }
-    if(I(0)==1) {
-      temp = Xm(row,2) - temp - Mv(c);
-      Nv(r) = Nv(r) + temp;
-      Cv(r)++;
+    tmp += Rv[r] + Cv[c];
+    tmp = Xm(n, 2) - tmp;
+    tmp = tmp * tmp;
+    for (int k = 0; k < K; k++) {
+      tmp += cov1m(r, k) * U2m(c, k) * U2m(c, k) + U1m(r, k) * U1m(r, k) * cov2m(c, k) +
+             cov1m(r, k) * cov2m(c, k);
+    }
+    tmp += nu1v[r] + nu2v[c];
 
+    out += tmp;
+  }
+
+  return out;
+}
+
+[[cpp11::register]] sexp p_updateMean(const doubles_matrix<> Xm,
+                                      const doubles_matrix<> U1m,
+                                      const doubles_matrix<> U2m, const int idx,
+                                      const doubles Mv) {
+  const int N = Xm.nrow();
+  const int K = U1m.ncol();
+
+  // If idx == 1 => update a row entity
+  // If idx == 2 => update a column entity
+  writable::doubles Nv(idx == 1 ? U1m.nrow() : U2m.nrow());
+  writable::integers Cv(idx == 1 ? U1m.nrow() : U2m.nrow());
+  for (int i = 0; i < Cv.size(); i++) {
+    Nv[i] = 0.0;
+    Cv[i] = 0;
+  }
+
+  for (int n = 0; n < N; n++) {
+    const int r = Xm(n, 0) - 1;
+    const int c = Xm(n, 1) - 1;
+
+    double tmp = 0.0;
+    for (int k = 0; k < K; k++) {
+      tmp += U1m(r, k) * U2m(c, k);
+    }
+    if (idx == 1) {
+      tmp = Xm(n, 2) - tmp - Mv[c];
+      Nv[r] += tmp;
+      Cv[r]++;
     } else {
-      temp = Xm(row,2) - temp - Mv(r);
-      Nv(c) = Nv(c) + temp;
-      Cv(c)++;
+      tmp = Xm(n, 2) - tmp - Mv[r];
+      Nv[c] += tmp;
+      Cv[c]++;
     }
   }
-  List ret;
-  ret["sum"] = Nv;
-  ret["count"] = Cv;
-  return(ret);
+
+  return writable::list({"sum"_nm = Nv, "count"_nm = Cv});
 }
 
+[[cpp11::register]] void p_covUsparse(const doubles_matrix<> Xm, doubles_matrix<> Cm,
+                                      const doubles_matrix<> OUm,
+                                      const doubles_matrix<> OCm, const int idx,
+                                      const double tau) {
+  double* const pCm = REAL(Cm.data());
 
-// [[Rcpp::export]]
-void p_covUsparse(
-  NumericMatrix Xm, NumericMatrix Cm, NumericMatrix OUm, NumericMatrix OCm, NumericVector I, NumericVector T){
-  int N = Xm.nrow(), K = Cm.ncol();
-  int row, r, c, k;
+  const int N = Xm.nrow();
+  const int K = Cm.ncol();
 
-  if(I(0)==1) {
-    for(row=0;row<N;row++) {
-      r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-      for(k=0;k<K;k++) {
-        Cm(r,k) = Cm(r,k) + T(0) * (OUm(c,k)*OUm(c,k) + OCm(c,k));
+  if (idx == 1) {
+    for (int n = 0; n < N; n++) {
+      const int r = Xm(n, 0) - 1;
+      const int c = Xm(n, 1) - 1;
+
+      for (int k = 0; k < K; k++) {
+        pCm[r + k * K] += tau * (OUm(c, k) * OUm(c, k) + OCm(c, k));
       }
-     }
+    }
   } else {
-    for(row=0;row<N;row++) {
-      r = Xm(row,0) - 1; c = Xm(row,1) - 1;
-      for(k=0;k<K;k++) {
-        Cm(c,k) = Cm(c,k) + T(0)* (OUm(r,k)*OUm(r,k) + OCm(r,k));
+    for (int n = 0; n < N; n++) {
+      const int r = Xm(n, 0) - 1;
+      const int c = Xm(n, 1) - 1;
+
+      for (int k = 0; k < K; k++) {
+        pCm[c + k * K] += tau * (OUm(r, k) * OUm(r, k) + OCm(r, k));
       }
     }
   }
-  //return(Cm);
 }
-
-
-

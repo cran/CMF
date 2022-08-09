@@ -18,13 +18,13 @@ sparse format. This function converts regular R matrices
 into that format.
 }
 \details{
-The element X[i,j] on the i:th row and j:t column is represented
-as a triple (i,j,X[i,k]). The input for CMF is then a matrix
+The element \code{X[i, j]} on the \code{i}-th row and \code{j}-th column is represented
+as a triple \verb{(i, j, X[i,k])}. The input for CMF is then a matrix
 where each row specifies one element, and hence the representation
-is of size Nx3, where N is the total number of observed entries.
+is of size \verb{N x 3}, where \code{N} is the total number of observed entries.
 
 In the original input matrix the missing entries should be marked
-as NA. In the output they will be completely omitted.
+as \code{NA}. In the output they will be completely omitted.
 
 Even though this format reminds the representation often used
 for representing sparse matrices, it is important to notice that
@@ -34,13 +34,13 @@ not zero.
 }
 \examples{
 
-x <- matrix(c(1,2,NA,NA,5,6),nrow=3)
+x <- matrix(c(1, 2, NA, NA, 5, 6), nrow = 3)
 triplet <- matrix_to_triplets(x)
 print(triplet)
 
 }
 \seealso{
-\code{\link{triplets_to_matrix}}
+\code{\link[=triplets_to_matrix]{triplets_to_matrix()}}
 }
 \author{
 Arto Klami and Lauri Väre

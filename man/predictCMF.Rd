@@ -17,20 +17,19 @@ when learning the model with \code{CMF}.}
 \value{
 A list of
 \item{out}{A list of matrices corresponding to predictions for each
-           matrix in \code{X}.}
+matrix in \code{X}.}
 \item{error}{A vector containing the root-mean-square error for each
-             matrix separately.}
+matrix separately.}
 }
 \description{
 Code for predicting missing elements with an existing CMF model.
 The predictions are made for all of the elements specified in the list of
-input matrices \code{X}. The function also returns the root mean square
-error (RMSE) between the predicted outputs and the values provided in
-\code{X}.
+input matrices \code{X}. The function also returns the root mean square error
+(RMSE) between the predicted outputs and the values provided in \code{X}.
 }
 \details{
 Note that \code{X} needs to be provided as a set of triplets instead of as
-a regular matrix. See \code{\link{matrix_to_triplets}}.
+a regular matrix. See \code{\link[=matrix_to_triplets]{matrix_to_triplets()}}.
 }
 \examples{
 
